@@ -104,7 +104,7 @@ After making any changes to the codebase, always run the complete validation seq
 ## Build Configuration
 - **Solidity Version**: 0.8.20 (EXACT - do not change)
 - **Optimization**: 1,000,000 runs for maximum gas efficiency
-- **Dependencies**: Managed via git submodules (UniswapX, OpenZeppelin, Solmate, forge-std)
+- **Dependencies**: Managed via git submodules (UniswapX, OpenZeppelin, forge-std)
 - **Remappings**: See `remappings.txt` - critical for compilation
 
 ## Testing Strategy
