@@ -40,14 +40,14 @@ salt_for() {
 update_config() {
   local target=$1 address=$2 tmp=$(mktemp)
   if [[ $target == global:* ]]; then
-    jq --arg key "${target#global:}" --arg addr "$address" '
+    jq --indent 4 --arg key "${target#global:}" --arg addr "$address" '
       setpath(["*", $key]; $addr)
     ' "$CONFIG_FILE" >"$tmp"
   else
     local chain dex field
     local IFS=':'
     read -r _ chain dex field <<< "$target"
-    jq --arg chain "$chain" --arg dex "$dex" --arg field "$field" --arg addr "$address" '
+    jq --indent 4 --arg chain "$chain" --arg dex "$dex" --arg field "$field" --arg addr "$address" '
       setpath([$chain, "dex", $dex, $field]; $addr)
     ' "$CONFIG_FILE" >"$tmp"
   fi
@@ -73,21 +73,10 @@ run() {
     local address=$(jq -r '.returns[]?.value | select(. != null)' "$tmp" | tail -n1)
     if [[ -n $address ]]; then
       update_config "$target" "$address"
-      [[ -n $contract ]] && verify_contract "$address" "$contract"
     fi
   fi
 
   rm -f "$tmp"
-}
-
-verify_contract() {
-  local address=$1 contract=$2
-  [[ -z $address || -z $contract ]] && return
-  printf 'Verifying %s at %s\n' "$contract" "$address"
-  if ! forge verify-contract "$address" "$contract" --watch; then
-    printf 'error: verification failed for %s\n' "$contract" >&2
-    exit 1
-  fi
 }
 
 deploy_dex() {
@@ -114,6 +103,10 @@ deploy_dex() {
     p2)
       script=DeployP2Exchange
       adapter_contract=P2DexAdapter
+      ;;
+    paraswap)
+      script=DeployParaswapExchange
+      adapter_contract=ParaswapDexAdapter
       ;;
     *) printf 'error: unsupported adapter type %s\n' "$dex_type" >&2; exit 1 ;;
   esac
